@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,9 +61,7 @@ def _get_playlist_file_info(
 ) -> list[sqlite_schema_utils.PlaylistInfo]:
   """Executes join query to fetch playlist file info."""
   with env.controller.pull_file(_DB_PATH, timeout_sec=3) as local_db_directory:
-    local_db_path = file_utils.convert_to_posix_path(
-        local_db_directory, os.path.split(_DB_PATH)[1]
-    )
+    local_db_path = os.path.join(local_db_directory, os.path.split(_DB_PATH)[1])
     return sqlite_utils.execute_query(
         _get_playlist_info_query(),
         local_db_path,

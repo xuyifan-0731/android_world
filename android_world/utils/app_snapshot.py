@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
 
 """Utils for handling snapshots for apps."""
 
+import os
+
 from absl import logging
 from android_env import env_interface
 from android_world.env import adb_utils
@@ -25,16 +27,14 @@ def _app_data_path(app_name: str) -> str:
   package_name = adb_utils.extract_package_name(
       adb_utils.get_adb_activity(app_name)
   )
-  return file_utils.convert_to_posix_path("/data/data/", package_name)
+  return os.path.join("/data/data/", package_name)
 
 
 def _snapshot_path(app_name: str) -> str:
   package_name = adb_utils.extract_package_name(
       adb_utils.get_adb_activity(app_name)
   )
-  return file_utils.convert_to_posix_path(
-      device_constants.SNAPSHOT_DATA, package_name
-  )
+  return os.path.join(device_constants.SNAPSHOT_DATA, package_name)
 
 
 def clear_snapshot(

@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -97,8 +97,7 @@ def maybe_install_app(
   """Installs all APKs for Android World."""
   if not app.apk_names:  # Ignore 1p apps that don't have an APK.
     return
-  logging.info("Installing app: %s.", app.app_name)
-
+  print(f"Installing app: {app.app_name}.")
   apk_installed = False
   for apk_name in app.apk_names:
     try:
@@ -126,7 +125,7 @@ def setup_apps(env: interface.AsyncEnv) -> None:
   adb_utils.press_home_button(env.controller)
   adb_utils.set_root_if_needed(env.controller)
 
-  logging.info(
+  print(
       "Installing and setting up applications on Android device. Please do not"
       " interact with device while installation is running."
   )

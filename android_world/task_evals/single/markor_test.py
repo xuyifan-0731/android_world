@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -346,12 +346,9 @@ class GalleryMarkorTest(test_utils.AdbEvalTestBase):
 
     task.initialize_task(mock_env)
 
-    receipt_img_path = file_utils.convert_to_posix_path(
-        file_utils.get_local_tmp_directory(), 'receipt.png'
-    )
-    task.img.save.assert_called_once_with(receipt_img_path)
+    task.img.save.assert_called_once_with('/tmp/receipt.png')
     mock_copy_data_to_device.assert_called_once_with(
-        receipt_img_path,
+        '/tmp/receipt.png',
         device_constants.GALLERY_DATA,
         mock_env.controller,
     )

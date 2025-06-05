@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 import abc
 import dataclasses
-import logging
 import time
 from typing import Any
 
@@ -101,14 +100,17 @@ class EnvironmentInteractingAgent(abc.ABC):
   def get_post_transition_state(self) -> interface.State:
     """Convenience function to get the agent state after the transition."""
     if self._transition_pause is None:
-      logging.info('Waiting for screen to stabilize before grabbing state...')
+      print(
+          'Waiting for screen to stabilize before grabbing state...',
+          end=' ',
+      )
       start = time.time()
       state = self.env.get_state(wait_to_stabilize=True)
-      logging.info('Fetched after %.1f seconds.', time.time() - start)
+      print(f'Fetched after {time.time() - start:2.1f} seconds.')
       return state
     else:
       time.sleep(self._transition_pause)
-      logging.info(
+      print(
           'Pausing {:2.1f} seconds before grabbing state.'.format(
               self._transition_pause
           )

@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -420,7 +420,7 @@ class RecipeAddSingleRecipe(_RecipeAddMultipleRecipes):
 class RecipeAddMultipleRecipes(_RecipeAddMultipleRecipes):
   """Task to delete multiple recipes in Broccoli Recipe App."""
 
-  complexity = 6
+  complexity = 6.8
   n_rows = 3
   n_rows_noise = 10
 
@@ -428,7 +428,7 @@ class RecipeAddMultipleRecipes(_RecipeAddMultipleRecipes):
 class RecipeAddMultipleRecipesFromMarkor(_RecipeAddMultipleRecipes):
   """Task to add multiple recipes from a text file to Broccoli Recipe App."""
 
-  complexity = 6
+  complexity = 4.8
   n_rows = 3
   n_rows_noise = 10
 
@@ -460,7 +460,7 @@ class RecipeAddMultipleRecipesFromMarkor2(RecipeAddMultipleRecipesFromMarkor):
 
   n_rows = 3
   n_rows_noise = 40
-  complexity = 6
+  complexity = 5.2
 
   @property
   def goal(self) -> str:
@@ -519,7 +519,7 @@ class RecipeAddMultipleRecipesFromImage(_RecipeAddMultipleRecipes):
   """Task to add multiple recipes from an image file to Broccoli Recipe App."""
 
   app_names = (_APP_NAME, 'simple gallery pro')
-  complexity = 6
+  complexity = 2.6
   n_rows = 3
   n_rows_noise = 10
 

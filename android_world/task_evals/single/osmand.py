@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,13 +31,9 @@ from android_world.utils import file_utils
 
 _DEVICE_FILES = '/data/media/0/Android/data/net.osmand/files'
 _LEGACY_FILES = '/data/data/net.osmand/files'
-_FAVORITES_PATH = file_utils.convert_to_posix_path(
-    _DEVICE_FILES, 'favorites/favorites.gpx'
-)
-_LEGACY_FAVORITES_PATH = file_utils.convert_to_posix_path(
-    _LEGACY_FILES, 'favourites_bak.gpx'
-)
-_BACKUP_DIR_PATH = file_utils.convert_to_posix_path(_LEGACY_FILES, 'backup')
+_FAVORITES_PATH = os.path.join(_DEVICE_FILES, 'favorites/favorites.gpx')
+_LEGACY_FAVORITES_PATH = os.path.join(_LEGACY_FILES, 'favourites_bak.gpx')
+_BACKUP_DIR_PATH = os.path.join(_LEGACY_FILES, 'backup')
 
 # Random location names and coords present in the pre-loaded Liechtenstein map.
 _PRELOADED_MAP_LOCATIONS = {
@@ -316,11 +312,7 @@ def _clear_tracks(env: env_interface.AndroidEnvInterface):
   Raises:
     RuntimeError: If there is an adb communication issue.
   """
-  adb_args = [
-      'shell',
-      'rm -rf',
-      file_utils.convert_to_posix_path(_DEVICE_FILES, 'tracks', '*'),
-  ]
+  adb_args = ['shell', 'rm -rf', os.path.join(_DEVICE_FILES, 'tracks', '*')]
   # Issue ADB pull command to copy the directory
   response = adb_utils.issue_generic_request(adb_args, env)
   if response.status != adb_pb2.AdbResponse.OK:
@@ -425,16 +417,13 @@ class OsmAndTrack(_OsmTaskEval):
 
   def is_successful(self, env: interface.AsyncEnv) -> float:
     with file_utils.tmp_directory_from_device(
-        file_utils.convert_to_posix_path(_DEVICE_FILES, 'tracks'),
-        env.controller,
+        os.path.join(_DEVICE_FILES, 'tracks'), env.controller
     ) as tracks_directory:
       for track_file in os.listdir(tracks_directory):
         if _track_matches(
             _track_points(
                 ElementTree.parse(
-                    file_utils.convert_to_posix_path(
-                        tracks_directory, track_file
-                    )
+                    os.path.join(tracks_directory, track_file)
                 ).getroot()
             ),
             self._target_waypoint_coords,

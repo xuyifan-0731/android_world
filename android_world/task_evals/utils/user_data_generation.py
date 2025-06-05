@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 """Fake user data; used to populate apps with data."""
 
 import datetime
-import functools
-import logging
 import os
 import random
 import re
@@ -42,18 +40,21 @@ _FONT_PATHS = [
 ]
 
 
-@functools.cache
-def get_font(size: int | float) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-  """Returns a sensible font at the requested size."""
+def get_font_path() -> str:
+  """Get the font path, falling back to a default system font if necessary."""
   for font_name in _FONT_PATHS:
     try:
-      return ImageFont.truetype(font_name, size=float(size))
+      font_path = ImageFont.truetype(font_name).path
+      return font_path  # pytype: disable=bad-return-type  # pillow-102-upgrade
     except IOError:
       continue
-  return ImageFont.load_default(float(size))
+  try:
+    return ImageFont.truetype().path  # pytype: disable=bad-return-type  # pillow-102-upgrade
+  except IOError as exc:
+    raise RuntimeError("No suitable font found.") from exc
 
 
-_TMP = file_utils.get_local_tmp_directory()
+_TMP = os.environ['TMPDIR']
 
 
 def generate_random_string(length: int) -> str:
@@ -163,19 +164,14 @@ def write_to_gallery(
   """
 
   image = _draw_text(data)
-  temp_storage_location = file_utils.convert_to_posix_path(_TMP, file_name)
+  temp_storage_location = os.path.join(_TMP, file_name)
   image.save(temp_storage_location)
   file_utils.copy_data_to_device(
       temp_storage_location,
       device_constants.GALLERY_DATA,
       env.controller,
   )
-  try:
-    os.remove(temp_storage_location)
-  except FileNotFoundError:
-    logging.warning(
-        "Local file %s not found, so cannot remove it.", temp_storage_location
-    )
+  os.remove(temp_storage_location)
   adb_utils.close_app("simple gallery", env.controller)
 
 
@@ -183,7 +179,7 @@ def _copy_data_to_device(
     data: str, file_name: str, location: str, env: interface.AsyncEnv
 ):
   """Copies data to device by first writing locally, then copying.."""
-  temp_storage_location = file_utils.convert_to_posix_path(_TMP, file_name)
+  temp_storage_location = os.path.join(_TMP, file_name)
   with open(temp_storage_location, "w") as temp_file:
     temp_file.write(data)
 
@@ -192,12 +188,7 @@ def _copy_data_to_device(
       location,
       env.controller,
   )
-  try:
-    os.remove(temp_storage_location)
-  except FileNotFoundError:
-    logging.warning(
-        "Local file %s not found, so cannot remove it.", temp_storage_location
-    )
+  os.remove(temp_storage_location)
 
 
 def write_to_markor(
@@ -289,7 +280,7 @@ def write_video_file_to_device(
     messages = ["test" + str(random.randint(0, 1_000_000))]
 
   _create_mpeg_with_messages(
-      file_utils.convert_to_posix_path(_TMP, file_name),
+      os.path.join(_TMP, file_name),
       messages,
       display_time=message_display_time,
       width=width,
@@ -298,7 +289,7 @@ def write_video_file_to_device(
   )
 
   file_utils.copy_data_to_device(
-      file_utils.convert_to_posix_path(_TMP, file_name),
+      os.path.join(_TMP, file_name),
       location,
       env.controller,
   )
@@ -341,7 +332,7 @@ def write_mp3_file_to_device(
     title: The title of the song.
     duration_milliseconds: The duration of the MP3 file in milliseconds.
   """
-  local = file_utils.convert_to_posix_path(_TMP, os.path.basename(remote_path))
+  local = os.path.join(_TMP, os.path.basename(remote_path))
   _create_test_mp3(
       local,
       artist=artist,
@@ -353,10 +344,8 @@ def write_mp3_file_to_device(
       remote_path,
       env.controller,
   )
-  try:
-    os.remove(local)
-  except FileNotFoundError:
-    logging.warning("Local file %s not found, so cannot remove it.", local)
+  os.remove(local)
+
 
 
 def dict_to_notes(input_dict: dict[str, tuple[str, str]]) -> str:
@@ -423,7 +412,7 @@ def _draw_text(text: str, font_size: int = 24) -> Image.Image:
   Returns:
       The image object with the text.
   """
-  font = get_font(font_size)
+  font = ImageFont.truetype(get_font_path(), font_size)
   lines = text.split("\n")
 
   # Calculate dimensions using font metrics
@@ -456,18 +445,11 @@ def _draw_text(text: str, font_size: int = 24) -> Image.Image:
 
 
 def clear_internal_storage(env: interface.AsyncEnv) -> None:
-  """Deletes all files from internal storage, leaving directory structure intact."""
-  adb_command = [
-      "shell",
-      "find",
-      device_constants.EMULATOR_DATA,
-      "-mindepth",
-      "1",
-      "-type",
-      "f",  # Regular file.
-      "-delete",
-  ]
-  adb_utils.issue_generic_request(adb_command, env.controller)
+  """Clears all internal storage directories on device."""
+  for directory in EMULATOR_DIRECTORIES:
+    file_utils.clear_directory(
+        os.path.join(device_constants.EMULATOR_DATA, directory), env.controller
+    )
 
 
 def _clear_external_downloads(env: interface.AsyncEnv) -> None:

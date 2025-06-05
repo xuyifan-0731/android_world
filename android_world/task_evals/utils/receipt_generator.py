@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ from android_world.env import device_constants
 from android_world.task_evals.utils import user_data_generation
 from PIL import Image
 from PIL import ImageDraw
+from PIL import ImageFont
 
 
 def _random_date():
@@ -81,9 +82,10 @@ def create_receipt(num_transactions: int = 1) -> tuple[Image.Image, str]:
   img = Image.new("RGB", (500, img_height), color=(255, 255, 255))
   d = ImageDraw.Draw(img)
 
-  font = user_data_generation.get_font(16)
-  header_font = user_data_generation.get_font(20)
-  footer_font = user_data_generation.get_font(12)
+  font_path = user_data_generation.get_font_path()
+  font = ImageFont.truetype(font_path, 16)
+  header_font = ImageFont.truetype(font_path, 20)
+  footer_font = ImageFont.truetype(font_path, 12)
 
   # Add company name and slogan
   y_text = 100

@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ T = TypeVar('T')
 
 _DEFAULT_TIMEOUT_SECS = 10
 
-# pylint: disable=line-too-long
 # Maps app names to the activity that should be launched to open the app.
 _PATTERN_TO_ACTIVITY = immutabledict.immutabledict({
     'google chrome|chrome': (
@@ -121,8 +120,6 @@ _PATTERN_TO_ACTIVITY = immutabledict.immutabledict({
         'code.name.monkey.retromusic/.activities.MainActivity'
     ),
 })
-# pylint: enable=line-too-long
-
 _ORIENTATIONS = {
     'portrait': '0',
     'landscape': '1',
@@ -192,7 +189,7 @@ def start_activity(
     logging.error('Failed to launch activity: %r', activity)
     return response
 
-  logging.debug('Launch package output %r', response.generic.output)
+  logging.info('Launch package output %r', response.generic.output)
   return response
 
 
@@ -454,8 +451,7 @@ def _split_words_and_newlines(text: str) -> Iterable[str]:
   for i, line in enumerate(lines):
     words = line.split(' ')
     for j, word in enumerate(words):
-      if word:
-        yield word
+      yield word
       if j < len(words) - 1:
         yield '%s'
     if i < len(lines) - 1:
@@ -499,6 +495,7 @@ def type_text(
       logging.error('Failed to type word: %r', formatted)
 
 
+
 def issue_generic_request(
     args: Collection[str] | str,
     env: env_interface.AndroidEnvInterface,
@@ -527,6 +524,8 @@ def issue_generic_request(
     args = args.split(' ')
   else:
     args_str = ' '.join(args)
+  logging.info('Issuing generic adb request: %r', args_str)
+
 
   response = env.execute_adb_call(
       adb_pb2.AdbRequest(
@@ -730,39 +729,6 @@ def generate_swipe_command(
       'shell',
       'input',
       'swipe',
-      str(start_x),
-      str(start_y),
-      str(end_x),
-      str(end_y),
-      duration_str,
-  ]
-
-
-def generate_drag_and_drop_command(
-    start_x: int,
-    start_y: int,
-    end_x: int,
-    end_y: int,
-    duration_ms: Optional[int] = None,
-) -> list[str]:
-  """Sends a drag and drop action to the simulator.
-
-  Args:
-    start_x: The x-coordinate of the start of the drag and drop.
-    start_y: The y-coordinate of the start of the drag and drop.
-    end_x: The x-coordinate of the end of the drag and drop.
-    end_y: The y-coordinate of the end of the drag and drop.
-    duration_ms: If given, the duration of time in milliseconds to take to
-      complete the drag and drop.
-
-  Returns:
-    List of adb arguments.
-  """
-  duration_str = str(duration_ms) if duration_ms else ''
-  return [
-      'shell',
-      'input',
-      'draganddrop',
       str(start_x),
       str(start_y),
       str(end_x),
@@ -1038,7 +1004,7 @@ def check_airplane_mode(env: env_interface.AndroidEnvInterface) -> bool:
         f' {response.generic.output.decode()}.'
     )
 
-  return response.generic.output.decode().replace('\r', '').strip('\n') == '1'
+  return response.generic.output.decode().strip('\n') == '1'
 
 
 def extract_broadcast_data(raw_output: str) -> Optional[str]:
@@ -1051,7 +1017,7 @@ def extract_broadcast_data(raw_output: str) -> Optional[str]:
     Extracted data as a string, or None if the result is 0.
   """
   if 'Broadcast completed: result=-1, data=' in raw_output:
-    return raw_output.split('data=')[1].strip('"\r\n')
+    return raw_output.split('data=')[1].strip('"\n')
   elif 'Broadcast completed: result=0' in raw_output:
     return None
   else:

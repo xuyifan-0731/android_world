@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 """Tasks for Simple Draw Pro app."""
 
+import os
 import random
 from typing import Any
 from android_world.env import device_constants
@@ -39,10 +40,7 @@ class SimpleDrawProCreateDrawing(task_eval.TaskEval):
     super().__init__(params)
     self.initialized = False
     self.create_file_task = file_validators.CreateFile(
-        params,
-        file_utils.convert_to_posix_path(
-            device_constants.EMULATOR_DATA, "Pictures"
-        ),
+        params, os.path.join(device_constants.EMULATOR_DATA, "Pictures")
     )
 
   def initialize_task(self, env: interface.AsyncEnv) -> None:

@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import dataclasses
 import time
 from typing import Any, Optional, Self
 
-from absl import logging
 from android_env.components import action_type
 from android_world.env import actuation
 from android_world.env import adb_utils
@@ -300,9 +299,6 @@ class AsyncAndroidEnv(AsyncEnv):
       if action.text:
         self.display_message(action.text, header='Agent answered:')
       return
-    if action.action_type == json_action.STATUS:
-      # Do nothing if it is a termination action.
-      return
     state = self.get_state(wait_to_stabilize=False)
     actuation.execute_adb_action(
         action,
@@ -347,10 +343,7 @@ class AsyncAndroidEnv(AsyncEnv):
     return adb_utils.get_logical_screen_size(self.controller)
 
   def close(self) -> None:
-    try:
-      self.controller.close()
-    except:  # pylint: disable=bare-except
-      logging.warning('Failed to close controller. Continuing.')
+    return self.controller.close()
 
   @property
   def orientation(self) -> int:

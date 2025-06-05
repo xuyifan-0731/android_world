@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ class IncrementalCheckpointer(Checkpointer):
     with open(filename, 'wb') as f:
       compressed = _gzip_pickle(task_episodes)
       f.write(compressed)
-    logging.info('Wrote task episodes for %s to %s', task_name, filename)
+    print(f'Wrote task episodes for {task_name} to {filename}')
 
   def load(self, fields: list[str] | None = None) -> list[Episode]:
     """Loads all task groups from disk."""
@@ -147,7 +147,7 @@ class IncrementalCheckpointer(Checkpointer):
             ]
           data.extend(task_group)
         except Exception as e:  # pylint: disable=broad-exception-caught
-          logging.info('Unable to load %s with exception: %s', filename, e)
+          print(f'Unable to load {filename} with exception: {e}')
     return data
 
   def _load_task_group(self, task_group_id: str) -> list[Episode]:
@@ -210,7 +210,7 @@ class DeprecatedCheckpointer:
     with open(self.filename, 'wb') as f:
       compressed = _gzip_pickle((data, completed_tasks))
       f.write(compressed)
-    logging.info('Wrote to %s', self.filename)
+    print(f'Wrote to {self.filename}')
 
   def load(
       self, fields: list[str] | None = None

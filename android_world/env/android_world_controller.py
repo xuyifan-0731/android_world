@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 import contextlib
 import enum
 import os
+import tempfile
 import time
 from typing import Any
 from typing import cast
@@ -92,6 +93,8 @@ def get_a11y_tree(
   ] = None
   for _ in range(max_retries):
     try:
+      # import pdb
+      # pdb.set_trace()
       forest = env.accumulate_new_extras()['accessibility_tree'][-1]  # pytype:disable=attribute-error
       return forest
     except KeyError:
@@ -103,9 +106,6 @@ def get_a11y_tree(
   return forest
 
 
-_TASK_PATH = file_utils.convert_to_posix_path(
-    file_utils.get_local_tmp_directory(), 'default.textproto'
-)
 DEFAULT_ADB_PATH = '~/Android/Sdk/platform-tools/adb'
 
 
@@ -287,17 +287,16 @@ class AndroidWorldController(base_wrapper.BaseWrapper):
 
 
 def _write_default_task_proto() -> str:
-  with open(_TASK_PATH, 'w') as f:
+  fd, path = tempfile.mkstemp(suffix='.textproto', text=True)
+  with os.fdopen(fd, 'w') as f:
     f.write("""\
 id: "default"
 
 name: "Default task for device control."
 description: "Empty task"
 
-max_episode_sec: 7200  # Prevent infinite episodes.
-  """)
-  return _TASK_PATH
-
+max_episode_sec: 7200  # Prevent infinite episodes.""")
+  return path
 
 def get_controller(
     console_port: int = 5554,

@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,9 @@
 
 """Tasks that require interacting with a browser."""
 
+import os
 import random
+import tempfile
 import time
 from typing import Any
 from android_world.env import adb_utils
@@ -71,17 +73,15 @@ class BrowserTask(task_eval.TaskEval):
     )
 
     html = self.HTML.replace('%%SEED%%', str(self.params['browser_task_seed']))
-    task_html_path = file_utils.convert_to_posix_path(
-        file_utils.get_local_tmp_directory(), 'task.html'
-    )
-    with open(task_html_path, 'w') as f:
+    task_html_fd, task_html_path = tempfile.mkstemp('.html', 'task', text=True)
+    with open(task_html_fd, 'w') as f:
       f.write(html)
     file_utils.copy_data_to_device(
-        task_html_path,
-        file_utils.convert_to_posix_path(
-            device_constants.DOWNLOAD_DATA, 'task.html'
-        ),
-        env.controller,
+      task_html_path,
+      os.path.join(
+        device_constants.DOWNLOAD_DATA, 'task.html'
+      ),
+      env.controller,
     )
 
   def tear_down(self, env: interface.AsyncEnv):

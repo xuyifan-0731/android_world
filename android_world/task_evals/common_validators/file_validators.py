@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 """Logic for checking file changes using `adb shell`."""
 
+import os
 from typing import Any
 from absl import logging
 from android_world.env import adb_utils
@@ -43,10 +44,10 @@ class MoveFile(task_eval.TaskEval):
   def __init__(self, params: dict[str, Any], data_directory: str):
     """Initialize the task."""
     super().__init__(params)
-    self.source_directory = file_utils.convert_to_posix_path(
+    self.source_directory = os.path.join(
         data_directory, self.params["source_folder"]
     )
-    self.dest_directory = file_utils.convert_to_posix_path(
+    self.dest_directory = os.path.join(
         data_directory, self.params["destination_folder"]
     )
 
@@ -122,7 +123,7 @@ class DeleteFile(task_eval.TaskEval):
     """
     super().__init__(params)
     if "subfolder" in self.params:
-      self.data_directory = file_utils.convert_to_posix_path(
+      self.data_directory = os.path.join(
           data_directory, self.params["subfolder"]
       )
     else:
@@ -213,11 +214,11 @@ class CreateFile(task_eval.TaskEval):
         [
             "shell",
             "cat",
-            file_utils.convert_to_posix_path(self.data_directory, file_name),
+            os.path.join(self.data_directory, file_name),
         ],
         env.controller,
     )
-    file_contents = res.generic.output.decode().replace("\r", "").strip()
+    file_contents = res.generic.output.decode().strip()
     match = fuzzy_match_lib.fuzzy_match(file_contents, self.params["text"])
     if not match:
       logging.info("%s does not match %s", file_contents, self.params["text"])

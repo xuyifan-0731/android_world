@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -297,7 +297,7 @@ class SystemBluetoothTurnOn(_SystemBluetoothToggle):
 class SystemCopyToClipboard(task_eval.TaskEval):
   """Task for verifying that the correct params are copied to the clipboard."""
 
-  app_names = ('clipper',)
+  app_names = ()
   complexity = 1
   schema = {
       'type': 'object',

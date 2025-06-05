@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ class FilesDeleteFile(task_eval.TaskEval):
   """Task for checking that a file has been deleted."""
 
   app_names = ("files",)
-  complexity = 2.2
+  complexity = 1
   schema = file_validators.DeleteFile.schema
   template = (
       "Delete the file {file_name} from the Android filesystem located in the"

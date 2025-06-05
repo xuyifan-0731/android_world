@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -101,13 +101,9 @@ class VlcTestBase(parameterized.TestCase):
     self.env_mock.controller = self.controller
 
     temp_dir = tempfile.mkdtemp()
-    self.test_db_path = file_utils.convert_to_posix_path(
-        temp_dir, 'app_db/vlc_media.db'
-    )
+    self.test_db_path = os.path.join(temp_dir, 'app_db/vlc_media.db')
     os.makedirs(
-        file_utils.convert_to_posix_path(
-            os.path.dirname(self.test_db_path), 'app_db'
-        ),
+        os.path.join(os.path.dirname(self.test_db_path), 'app_db'),
         exist_ok=True,
     )
 

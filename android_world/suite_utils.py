@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@
 import collections
 import datetime
 import hashlib
-import logging
 import os
 import random
 import time
 import traceback
-from typing import Any, Callable, Type, TypeVar
+from typing import Any, Callable, Type
 
 from android_env import env_interface
 from android_world import checkpointer as checkpointer_lib
@@ -41,7 +40,6 @@ import pandas as pd
 _FIXED_SEED = 123
 _TASK_TEMPLATE_COLUMN = 'task_template'
 _TASK_PROMPT_COLUMN = 'task_prompt'
-TaskEvalType = TypeVar('TaskEvalType', bound=task_eval.TaskEval)
 
 
 class Suite(dict[str, list[task_eval.TaskEval]]):
@@ -67,12 +65,6 @@ class Suite(dict[str, list[task_eval.TaskEval]]):
   def suite_family(self, value: str):
     """Setter for suite_family."""
     self._suite_family = value
-
-
-def _log_and_print(msg: str, *args: object) -> None:
-  formatted = msg % args if args else msg
-  logging.info(formatted)
-  print(formatted)
 
 
 def _instantiate_task(
@@ -109,7 +101,7 @@ def create_suite(
     seed: int | None = None,
     tasks: list[str] | None = None,
     use_identical_params: bool = False,
-    env: interface.AsyncEnv | None = None
+    env: interface.AsyncEnv | None = None,
 ) -> Suite:
   """Creates task suite.
 
@@ -221,8 +213,8 @@ def _filter_tasks(
 
 
 def _run_task(
-    task: TaskEvalType,
-    run_episode: Callable[[TaskEvalType], episode_runner.EpisodeResult],
+    task: task_eval.TaskEval,
+    run_episode: Callable[[task_eval.TaskEval], episode_runner.EpisodeResult],
     env: interface.AsyncEnv,
     demo_mode: bool,
 ) -> dict[str, Any]:
@@ -243,26 +235,20 @@ def _run_task(
   start = time.time()
   try:
     task.initialize_task(env)
-    _log_and_print('Running task %s with goal "%s"', task.name, task.goal)
+    print(f'Running task {task.name} with goal "{task.goal}"')
     interaction_results = run_episode(task)
     task_successful = task.is_successful(env)
-  except Exception as e:  # pylint: disable=broad-exception-caught
-    _log_and_print('%s\nSKIPPING %s.', '~' * 80, task.name)
-    logging.exception(
-        'Logging exception and skipping task. Will keep running. Task: %s: %s',
-        task.name,
-        e,
-    )
+  except Exception:  # pylint: disable=broad-exception-caught
+    print('~' * 80 + '\n' + f'SKIPPING {task.name}.')
     traceback.print_exc()
     return _create_failed_result(
         task.name, task.goal, traceback.format_exc(), time.time() - start
     )
   else:
     agent_successful = task_successful if interaction_results.done else 0.0
-    _log_and_print(
-        '%s; %s',
-        'Task Successful ✅' if agent_successful > 0.5 else 'Task Failed ❌',
-        f' {task.goal}',
+    print(
+        f'{"Task Successful ✅" if agent_successful > 0.5 else "Task Failed ❌"};'
+        f' {task.goal}'
     )
 
     if demo_mode:
@@ -370,7 +356,7 @@ def _run_task_suite(
   correct, total = 0, 0
   for name, instances in suite.items():
     msg = 'Running task: ' + name
-    _log_and_print(msg + '\n' + '=' * len(msg))
+    print(msg + '\n' + '=' * len(msg))
 
     for i, instance in enumerate(instances):
       instance_name = (
@@ -388,7 +374,7 @@ def _run_task_suite(
           instance_name in completed_tasks and instance_name not in failed_tasks
       )
       if already_processed:
-        _log_and_print('Skipping already processed task %s', instance_name)
+        print(f'Skipping already processed task {instance_name}')
         continue
 
       episode = _run_task(instance, run_episode, env, demo_mode=demo_mode)
@@ -717,11 +703,11 @@ def process_episodes(
     pd.set_option('display.max_columns', 100)
     pd.set_option('display.max_rows', 1000)
     pd.set_option('display.width', 1000)
-    _log_and_print('\n\n%s', result)  # Use lazy % formatting
+    print(f'\n\n{result}')
 
     # Add a chart that shows mean success rate by tag and difficulty.
     tags_df = _print_results_by_tag(tagged_result_df)
     pd.set_option('display.precision', 2)
-    _log_and_print('\n\n%s', tags_df)
+    print(f'\n\n{tags_df}')
 
   return tagged_result_df

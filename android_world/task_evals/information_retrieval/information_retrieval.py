@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -134,8 +134,6 @@ def _maybe_replace_date(params: dict[str, Any]) -> None:
   """Maybe replaces date parameters with a natural language equivalent."""
   for param_name, param_value in params.items():
     if param_name == 'seed':
-      continue
-    if not isinstance(param_value, str):
       continue
     try:
       if not param_value:

@@ -1,4 +1,4 @@
-# Copyright 2025 The android_world Authors.
+# Copyright 2024 The android_world Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 import dataclasses
 import datetime
+import os
 import random
 from typing import Any
 
@@ -227,13 +228,13 @@ class MarkorEditNote(Markor):
         [
             "shell",
             "cat",
-            file_utils.convert_to_posix_path(
+            os.path.join(
                 device_constants.MARKOR_DATA, self.params["file_name"]
             ),
         ],
         env.controller,
     )
-    file_contents = res.generic.output.decode().replace("\r", "").strip()
+    file_contents = res.generic.output.decode().strip()
     logging.info("Retrieved file contents: %s", file_contents)
 
     if self.params["edit_type"] == "header":
@@ -452,7 +453,6 @@ class MarkorCreateNote(Markor):
 class MarkorCreateNoteFromClipboard(Markor):
   """Task for creating a note using text in clipboard in Markor."""
 
-  app_names = ("markor", "clipper")
   complexity = 1.4
   schema = {
       "type": "object",
@@ -614,14 +614,13 @@ class MarkorMergeNotes(Markor):
             [
                 "shell",
                 "cat",
-                file_utils.convert_to_posix_path(
+                os.path.join(
                     device_constants.MARKOR_DATA, self.params["new_file_name"]
                 ),
             ],
             env.controller,
         )
         .generic.output.decode()
-        .replace("\r", "")
         .strip()
     )
 
@@ -712,9 +711,7 @@ class MarkorChangeNoteContent(Markor):
     ):
       return 0.0
     content_updated = file_utils.check_file_content(
-        file_utils.convert_to_posix_path(
-            device_constants.MARKOR_DATA, self.params["new_name"]
-        ),
+        os.path.join(device_constants.MARKOR_DATA, self.params["new_name"]),
         self.params["updated_content"],
         env.controller,
     )
@@ -796,9 +793,7 @@ class MarkorAddNoteHeader(Markor):
     ):
       return 0.0
     correct = file_utils.check_file_content(
-        file_utils.convert_to_posix_path(
-            device_constants.MARKOR_DATA, self.params["new_name"]
-        ),
+        os.path.join(device_constants.MARKOR_DATA, self.params["new_name"]),
         self.params["header"] + "\n\n" + self.params["original_content"] + "\n",
         env.controller,
         exact_match=True,
@@ -845,12 +840,9 @@ class MarkorTranscribeReceipt(task_eval.TaskEval):
     """Initializes the task for creating a receipt markdown file."""
     super().initialize_task(env)
     self.create_file_task.initialize_task(env)
-    receipt_img_path = file_utils.convert_to_posix_path(
-        file_utils.get_local_tmp_directory(), "receipt.png"
-    )
-    self.img.save(receipt_img_path)
+    self.img.save(os.path.join(os.environ['TMPDIR'], "receipt.png"))
     file_utils.copy_data_to_device(
-        receipt_img_path,
+        os.path.join(os.environ['TMPDIR'], "receipt.png"),
         device_constants.GALLERY_DATA,
         env.controller,
     )
